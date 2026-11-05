@@ -1,0 +1,19 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a vulnerability in this skill
+    url: https://github.com/iamrudhresh/cloudflare-security-audit-skill/security/advisories/new
+    about: >
+      Private advisory, visible only to maintainers. Use this for a way to make a validator read
+      a file it should refuse, accept evidence that does not exist, or run target code outside
+      the sandbox. Never open a public issue for these.
+  - name: Question or discussion
+    url: https://github.com/iamrudhresh/cloudflare-security-audit-skill/discussions
+    about: Usage questions, methodology discussion, or comparing notes on audit runs.
+  - name: Upstream project (Cloudflare)
+    url: https://github.com/cloudflare/security-audit-skill
+    about: >
+      This repository is an independent community fork, not affiliated with Cloudflare. For the
+      official project, go here.
+  - name: Contributing guide
+    url: https://github.com/iamrudhresh/cloudflare-security-audit-skill/blob/main/CONTRIBUTING.md
+    about: Branching model, commit conventions, how to run the test suites.

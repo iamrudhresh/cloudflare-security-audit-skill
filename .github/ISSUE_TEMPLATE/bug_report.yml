@@ -1,0 +1,104 @@
+name: Bug report
+description: A validator, workflow rule, or document behaves incorrectly
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a vulnerability **in this skill** (for example, a way to make a validator read a file
+        it should refuse), do not file here — follow
+        [SECURITY.md](https://github.com/iamrudhresh/cloudflare-security-audit-skill/blob/main/SECURITY.md).
+
+        A vulnerability the skill **found in your own code** is not a bug in the skill.
+        A vulnerability the skill **missed** is a feature request, not a bug.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: The observed behaviour, and what you expected instead.
+      placeholder: |
+        Running validate-findings.cjs against a valid findings.json exits 1 with
+        "input could not be opened or read safely". I expected it to pass.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: >
+        The smallest steps that reproduce it. A command, a minimal JSON file, or a filesystem
+        layout is usually enough.
+      render: shell
+      placeholder: |
+        echo '[]' > findings.json
+        node skills/security-audit/validate-findings.cjs findings.json
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - validate-findings.cjs
+        - validate-coverage-ledger.cjs
+        - validate-run-metadata.cjs
+        - validate-cross-consistency.cjs
+        - validate-environment.cjs / host-lock.cjs
+        - findings-to-sarif.cjs
+        - report-schema.json
+        - SKILL.md or workflow instructions
+        - A companion guide / attack class
+        - README or other documentation
+        - CI
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      description: Several past bugs were Windows-only, so please be specific.
+      placeholder: Windows 11 24H2 / Ubuntu 24.04 / macOS 15.1
+    validations:
+      required: true
+
+  - type: input
+    id: node
+    attributes:
+      label: Node version
+      description: Output of `node -v`. Node 20 or newer is required.
+      placeholder: v22.20.0
+    validations:
+      required: true
+
+  - type: input
+    id: commit
+    attributes:
+      label: Version or commit
+      description: The release tag or commit SHA you tested.
+      placeholder: v1.0.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: tests
+    attributes:
+      label: Test suite output
+      description: >
+        Optional but very helpful. From `skills/security-audit`, run `node --test` and paste any
+        failures. Skipped tests are normal — platform-specific suites skip elsewhere.
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues, including closed ones.
+          required: true
+        - label: This is a bug in the skill, not a finding in my own code.
+          required: true

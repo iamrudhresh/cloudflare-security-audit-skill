@@ -1,0 +1,62 @@
+name: Feature request
+description: Propose a change to the workflow, validators, schema, or tooling
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Proposing a new **vulnerability class**? Use the
+        [Attack class or hunting pattern](?template=attack_class.yml) template instead.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: >
+        What goes wrong today, concretely. A proposal that starts from a real run is far more
+        likely to land than one that starts from a preference.
+      placeholder: >
+        A hunter that never returns leaves its unit in_progress forever. The completion gate only
+        checks planned units, so a run can claim complete with an assignment still open.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: What should happen instead, and roughly where in the skill.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: breaking
+    attributes:
+      label: Is this a breaking change?
+      description: >
+        Breaking means it can invalidate an existing findings.json or coverage-ledger.json, or
+        change a validator CLI contract or the workflow's phase contract.
+      options:
+        - "No — additive or internal only"
+        - "Yes — changes report-schema.json"
+        - "Yes — changes a validator CLI contract"
+        - "Yes — changes the workflow phase contract"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: >
+        Including "do nothing". If this overlaps an existing issue or pull request — here or
+        upstream — say which, and why this should win.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and pull requests, including closed ones.
+          required: true

@@ -1,0 +1,101 @@
+name: Attack class or hunting pattern
+description: Propose a vulnerability class the skill does not currently hunt
+labels: ["attack-class", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the most valuable kind of contribution to the project, and it needs no code.
+
+        A good proposal names a **boundary that fails**, not a technology. "Next.js is risky" is
+        not a class; "a server action is a public endpoint whose mutation is not bound to the
+        rendered form's authorisation" is.
+
+  - type: input
+    id: title
+    attributes:
+      label: Class name
+      description: Short, boundary-shaped, in the style of the existing blocks.
+      placeholder: Streaming and partial-turn early dispatch
+    validations:
+      required: true
+
+  - type: dropdown
+    id: companion
+    attributes:
+      label: Which companion should hold it
+      description: Pick by trust boundary, not by language or framework.
+      options:
+        - ATTACK-CLASSES.md (ordinary class, applies broadly)
+        - AI-AND-LLM.md
+        - WEB-PROTOCOL-AND-AUTH.md
+        - CLIENT-SIDE.md
+        - CRYPTOGRAPHY-AND-KEY-MANAGEMENT.md
+        - CLOUD-AND-DEPLOYMENT.md
+        - SUPPLY-CHAIN-AND-RELEASE.md
+        - PROTOCOLS-RPC-AND-MESSAGING.md
+        - RESOURCE-EXHAUSTION-AND-AVAILABILITY.md
+        - DATA-ISOLATION-AND-LIFECYCLE.md
+        - DESKTOP-MOBILE-AND-LOCAL-IPC.md
+        - MEMORY-SAFETY-AND-BINARY.md
+        - ANDROID.md
+        - A new companion guide
+    validations:
+      required: true
+
+  - type: textarea
+    id: boundary
+    attributes:
+      label: The boundary and how it fails
+      description: >
+        Which trust boundary is crossed, by which lower-trust principal, and what the code does
+        wrong. This becomes the body of the block, so write it declaratively.
+      placeholder: >
+        A dispatcher acts on model output before the turn is final, firing a tool call as soon as
+        a chunk parses. The side effect runs on arguments the model had not finished emitting, or
+        on content a stop event removes from the logged turn.
+    validations:
+      required: true
+
+  - type: textarea
+    id: confirm
+    attributes:
+      label: What confirms it
+      description: >
+        What must an auditor establish from source to call this real? This becomes the block's
+        "Confirm …" directive.
+      placeholder: >
+        Confirm the dispatcher waits for a complete, validated turn before any side effect, and
+        that an already-dispatched effect is reversible once the finalized turn disagrees.
+    validations:
+      required: true
+
+  - type: textarea
+    id: not-a-finding
+    attributes:
+      label: What is NOT a finding here
+      description: >
+        Important. The skill refuses to report defence-in-depth gaps and unproven leads, so a
+        class needs its own negative boundary.
+      placeholder: A render-only preview with no side effect is not a finding.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Real-world evidence
+      description: >
+        A CVE, advisory, writeup, or incident where this class caused a real vulnerability. Not
+        strictly required, but it is what makes a proposal reviewable rather than speculative.
+      placeholder: CVE-2026-109618, CVE-2026-109619 ("php2shell")
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked the existing companions and this class is not already covered.
+          required: true
+        - label: This names a boundary failure, not a framework or a missing best practice.
+          required: true
