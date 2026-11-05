@@ -18,9 +18,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Run validate-findings tests
-        run: node validate-findings.test.cjs
+      # Runs every *.test.cjs suite, so a newly added validator cannot ship
+      # without its tests running on all three platforms.
+      - name: Run all validator test suites
+        run: node --test
         working-directory: skills/security-audit
-      - name: Run validate-coverage-ledger tests
-        run: node validate-coverage-ledger.test.cjs
-        working-directory: skills/security-audit
+
+  conflict-markers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Refuse committed conflict markers
+        run: |
+          if git grep -nE '^(<{7}|={7}|>{7})( |$)' -- . ; then
+            echo "conflict markers found" >&2
+            exit 1
+          fi
