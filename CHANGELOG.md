@@ -7,6 +7,18 @@ All notable changes to this project are documented here. The format follows
 Because this skill's output is consumed by other tooling, any change that can invalidate an
 existing `findings.json` or `coverage-ledger.json` is treated as a major change.
 
+## [1.0.1] - 2026-11-05
+
+### Fixed
+
+- **Fork metadata pointed at the upstream project in two machine-read places.** `plugin.json`
+  named Cloudflare, Inc. as author with the upstream repository as its homepage and repository,
+  and `findings-to-sarif.cjs` stamped the upstream repository into the `informationUri` of every
+  SARIF file it wrote — so audit output uploaded to GitHub code scanning identified a project
+  that did not produce it. Both now point at this repository. The `LICENSE` copyright line, the
+  README lineage notice, and the deliberate upstream links in the documentation and issue chooser
+  are unchanged: those are attribution, which is correct and required.
+
 ## [1.0.0] - 2026-11-05
 
 First release of this independent community fork of
@@ -139,4 +151,5 @@ Deliberately deferred, with reasons:
   backlog is clear; the discoverability problem it was partly meant to solve is addressed by #121.
 - **MIT-0 relicensing** (upstream #10). A licensing decision, not a code change.
 
+[1.0.1]: https://github.com/iamrudhresh/cloudflare-security-audit-skill/releases/tag/v1.0.1
 [1.0.0]: https://github.com/iamrudhresh/cloudflare-security-audit-skill/releases/tag/v1.0.0
