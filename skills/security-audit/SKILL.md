@@ -39,7 +39,7 @@ Map the Task tool to the host's sub-agent API. Do not invent a type the host doe
 
 Do not pass a host-unknown `tools` list. Do not call `define_subagent` in the same session as `invoke_subagent`. Do not use workspace `branch`: worktree cleanup looks like a kill and can hide the output directory.
 
-**Live children.** At most four delegated agents may run at once. Queue the rest in the same priority order the budget section already uses. Start the next queued agent only after one child returns a result or is recorded as refused. Never send stop or kill; wait until the child is idle and has returned text.
+**Live children (the live-child cap).** At most four delegated agents may run at once. Queue the rest in the same priority order the budget section already uses. Start the next queued agent only after one child returns a result or is recorded as refused. Never send stop or kill; wait until the child is idle and has returned text.
 
 **Delegated-agent preamble.** The first text in every reconnaissance, hunter, critic, and verifier prompt is this block, copied verbatim, immediately followed by the untrusted-content block under Untrusted target content below:
 
