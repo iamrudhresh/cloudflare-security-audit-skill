@@ -2,7 +2,7 @@
 
 /**
  * Validates coverage-ledger.json and its canonical coverage IDs.
- * Usage: node validate-coverage-ledger.cjs <path-to-coverage-ledger.json>
+ * Usage: node validate-coverage-ledger.cjs <path-to-coverage-ledger.json> [--terminal]
  */
 
 const fs = require("node:fs");
@@ -870,7 +870,8 @@ function readFileWithinLimit(file) {
   }
 }
 
-function validateDocument(ledger, baseDir) {
+function validateDocument(ledger, baseDir, options = {}) {
+  const terminal = options.terminal === true;
   const errors = createErrorList();
   if (!Array.isArray(ledger)) {
     errors.push("$: expected a top-level array");
@@ -890,6 +891,12 @@ function validateDocument(ledger, baseDir) {
   for (let index = 0; index < ledger.length && errors.length < LIMITS.validationErrors; index++) {
     const unit = ledger[index];
     errors.push(...collectUnitErrors(unit, index, baseDir));
+    if (terminal && isObject(unit) && unit.status === "in_progress") {
+      errors.push(`$[${index}].status: terminal ledger cannot include in_progress units`);
+    }
+    if (terminal && isObject(unit) && unit.status === "planned") {
+      errors.push(`$[${index}].status: terminal ledger cannot include planned units`);
+    }
     if (errors.length >= LIMITS.validationErrors) break;
     if (!isObject(unit) || typeof unit.coverage_id !== "string") continue;
 
@@ -917,9 +924,29 @@ function validateDocument(ledger, baseDir) {
   return errors;
 }
 
+const BOOLEAN_FLAGS = new Set(["--terminal"]);
+
+// One CLI contract (PR #123): a single path, then flags. A flag in BOOLEAN_FLAGS
+// stands alone; every other flag takes exactly one value. Extra positional
+// arguments are rejected rather than silently ignored.
 function run(file, rest = []) {
-  if (!file || rest.length > 0) {
-    console.error("Usage: node validate-coverage-ledger.cjs <path-to-coverage-ledger.json>");
+  if (!file) {
+    console.error("Usage: node validate-coverage-ledger.cjs <path-to-coverage-ledger.json> [--terminal]");
+    return 1;
+  }
+
+  let terminal = false;
+  for (let index = 0; index < rest.length; index += 1) {
+    const name = rest[index];
+    if (typeof name !== "string" || !name.startsWith("--")) {
+      console.error("Usage: node validate-coverage-ledger.cjs <path-to-coverage-ledger.json> [--terminal]");
+      return 1;
+    }
+    if (BOOLEAN_FLAGS.has(name)) {
+      if (name === "--terminal") terminal = true;
+      continue;
+    }
+    console.error(`Unknown argument: ${safeQuote(name)}`);
     return 1;
   }
 
@@ -949,7 +976,7 @@ function run(file, rest = []) {
 
   let errors;
   try {
-    errors = validateDocument(ledger, path.dirname(path.resolve(file)));
+    errors = validateDocument(ledger, path.dirname(path.resolve(file)), { terminal });
   } catch {
     console.error("Failed to validate coverage ledger: unexpected validation error");
     return 1;
