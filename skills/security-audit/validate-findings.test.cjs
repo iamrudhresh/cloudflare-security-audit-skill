@@ -1085,3 +1085,30 @@ test("keeps shared helpers aligned with the coverage-ledger validator", () => {
     );
   }
 });
+
+test("CLI rejects a bare reserved Windows device name", { skip: process.platform !== "win32" }, () => {
+  for (const name of ["NUL", "CON", "COM1", "nul.txt", "LPT1"]) {
+    const result = spawnSync(process.execPath, [validatorPath, name], {
+      encoding: "utf8",
+      timeout: CLI_TIMEOUT_MS,
+    });
+    const output = cliOutput(result);
+    assert.notEqual(result.error && result.error.code, "ETIMEDOUT", output);
+    assert.equal(result.status, 1, output);
+    assert.match(output, /must not name a reserved Windows device/);
+  }
+});
+
+test("a reserved device name is refused from any directory", { skip: process.platform !== "win32" }, () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "validate-findings-device-"));
+  try {
+    const result = spawnSync(process.execPath, [validatorPath, path.join(directory, "NUL")], {
+      encoding: "utf8",
+      timeout: CLI_TIMEOUT_MS,
+    });
+    assert.equal(result.status, 1, cliOutput(result));
+    assert.match(cliOutput(result), /must not name a reserved Windows device/);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});

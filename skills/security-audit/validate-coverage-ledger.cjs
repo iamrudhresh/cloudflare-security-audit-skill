@@ -814,6 +814,13 @@ function openWindowsInput(file) {
   if (resolved.startsWith("\\\\.\\") || resolved.startsWith("\\\\?\\")) {
     throw new SafeInputError("input must be a regular file");
   }
+  // path.resolve turns a bare device name such as NUL, CON or COM1 into an
+  // ordinary-looking drive path, so the \\.\\ and \\?\\ prefix check above cannot
+  // catch it. Windows resolves the reserved name in any directory, and "nul.txt"
+  // addresses the device too, so the final component is checked by name.
+  if (WINDOWS_RESERVED_COMPONENT.test(path.basename(resolved))) {
+    throw new SafeInputError("input must not name a reserved Windows device");
+  }
   const before = fs.lstatSync(resolved, { bigint: true });
   if (before.isSymbolicLink()) throw new SafeInputError("input must not be a symlink");
   if (!before.isFile()) throw new SafeInputError("input must be a regular file");
