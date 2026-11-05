@@ -65,6 +65,9 @@ Confirmed findings become results. Each `trace` becomes a `codeFlow` with the si
 | `validate-environment.test.cjs` | Isolation-gate tests, including escape and CLI exit-code cases |
 | `host-lock.cjs` | Exclusive lock for host mutations (install, upgrade, clean, delete), so two agents cannot mutate the machine at once |
 | `host-lock.test.cjs` | Host-lock tests: contention, ownership, stale reclaim, CLI behavior |
+| `SANDBOX-DOCKER.md` | Sibling-Docker sandbox provisioning for hosts where the agent's own unshare/bwrap is denied |
+| `check-environment.cjs` | Environment doctor: reports Node version, OS, and whether the validators' safe-open flags are available |
+| `check-environment.test.cjs` | Environment-doctor tests |
 | `validate-run-metadata.cjs` | Zero-dependency validator for `run-metadata.json` run-state in Phase 4 |
 | `validate-run-metadata.test.cjs` | Run-metadata validator tests |
 | `validate-cross-consistency.cjs` | Zero-dependency cross-validator: findings fingerprints must trace to validated ledger candidates |
