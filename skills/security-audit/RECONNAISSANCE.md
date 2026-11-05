@@ -38,6 +38,7 @@ Return trust boundaries and control locations with repository-relative file:line
 Inventory every source-visible place external or lower-trust input enters:
 - HTTP/browser, RPC/message/protocol, files/archive/document, CLI/env/config, plugins/dependencies/CI, cloud events/IAM selectors, model context/tool arguments, mobile/deep-link/webview, and local IPC.
 For each surface, follow major transformations, stored or derived copies, and security-relevant sinks. Record source-visible limits and parallel paths to the same effect.
+Identify domain-format validators and parsers (checksum, locale, date, currency, phone, ID, postal-code) that gate an accepted value, security decision, or sink input.
 Return repository-relative paths and line numbers. Be complete, but do not execute or send inputs.
 ```
 
@@ -89,7 +90,7 @@ Do not select a companion file merely because the language or dependency name ap
 
 ## Deterministic coverage ledger
 
-The parent writes `<output-dir>/coverage-ledger.json` as a top-level JSON array. Derive one unit for every material combination of entry surface, trust boundary, subsystem, and applicable ordinary or companion attack class at the granularity the run profile sets (`quick` uses one all-in-scope subsystem identity; `deep` adds lifecycle modes). For a scoped run, seed in-scope surfaces for assignment and retain discovered excluded surfaces as `out_of_scope` units so later full runs can turn them into current work.
+The parent writes `<output-dir>/coverage-ledger.json` as a top-level JSON array. Derive one unit for every material combination of entry surface, trust boundary, subsystem, and applicable ordinary or companion attack class at the granularity the run profile sets (`quick` uses one all-in-scope subsystem identity; `deep` adds lifecycle modes). For a scoped run, seed in-scope surfaces for assignment and retain discovered excluded surfaces as `out_of_scope` units so later full runs can turn them into current work. Map files holding domain-format validators or parsers that gate an accepted value or security decision into ledger units under the Business logic attack class (or record them as `out_of_scope` with a reason when their boundary is outside the run's scope), rather than leaving them unmapped.
 
 Every Agent 1d item 4 entry must be seeded as at least one unit, so a deployment control named in reconnaissance cannot be dropped without a trace. Map the control onto the unit dimensions: the surface it exposes, the boundary it is meant to enforce, the subsystem that owns it, and the applicable attack class. Use the source that declares or omits the control (migrations, infrastructure definitions, configuration) as starting paths. Assign the unit like any other: review the declaring source as a source-only check. When the control's deployed state is decisive, report it as a `needs_validation` candidate whose validation plan names the exact read-only or owner-observed check. Otherwise close the unit as `out_of_scope` or `deferred` with a nonempty unresolved reason. Never leave an item 4 entry in prose only.
 
