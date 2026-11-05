@@ -122,6 +122,24 @@ The most valuable contribution, and it needs no code.
 
 ---
 
+## Inherited identifiers: leave these alone
+
+Two strings carry the upstream project's name. Both look like leftovers from the fork and both
+should stay, because changing either breaks data users already have.
+
+- **`~/security-audit-skill/<repo-id>/run-<N>`** — the default output directory, in `SKILL.md`.
+  The prior-run reuse logic reads earlier runs from this path, so renaming it makes every existing
+  run invisible to the skill and silently loses the coverage carried forward between runs.
+- **`tool.driver.name: "security-audit-skill"`** in `findings-to-sarif.cjs`. GitHub code scanning
+  keys alert identity on the tool name. Renaming it closes every existing alert as "tool removed"
+  and reopens all of them as new, destroying triage history and comments.
+
+Neither is an attribution problem: they name the tool, not its owner. The strings that *did*
+misattribute ownership — the plugin manifest author, the SARIF `informationUri`, and a coverage
+statistic reported as this fork's own measurement — were fixed in v1.0.1 and v1.0.3.
+
+---
+
 ## Commits
 
 [Conventional Commits](https://www.conventionalcommits.org/):
