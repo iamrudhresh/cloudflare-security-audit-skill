@@ -17,6 +17,8 @@ The skill runs a structured audit in six phases:
 
 The parent runs `validate-coverage-ledger.cjs` after creating the ledger and after each later ledger update, and with `--terminal` in Phase 4 and after every Phase 5 replacement so a complete claim cannot retain open assignments. It runs `validate-findings.cjs` in Phase 4 and again after every Phase 5 replacement. It runs `validate-run-metadata.cjs` in Phase 4 and whenever `run_status` becomes `complete` or `incomplete`.
 
+Once Phase 3 has moved validated units to `candidate`, run `validate-cross-consistency.cjs` to prove the pairing between the two files: every record in `findings.json` must trace by fingerprint to a `candidate` ledger unit that actually validated it. Run it while the ledger still holds the candidate fingerprints (before Phase 5 final dispositions clear them); an orphan fingerprint means the report claims a record no coverage unit ever produced.
+
 The verdicts are distinct: `confirmed` has a complete source trace and bounded observed result, `needs_validation` has an exact unresolved fact and no severity, and `rejected` records a disproved candidate.
 
 Multiple runs against the same repo are additive. The skill uses prior ledgers and findings to target gaps, revalidate changed source, and carry forward current-source evidence without treating stale or unresolved work as covered.
@@ -65,6 +67,8 @@ Confirmed findings become results. Each `trace` becomes a `codeFlow` with the si
 | `host-lock.test.cjs` | Host-lock tests: contention, ownership, stale reclaim, CLI behavior |
 | `validate-run-metadata.cjs` | Zero-dependency validator for `run-metadata.json` run-state in Phase 4 |
 | `validate-run-metadata.test.cjs` | Run-metadata validator tests |
+| `validate-cross-consistency.cjs` | Zero-dependency cross-validator: findings fingerprints must trace to validated ledger candidates |
+| `validate-cross-consistency.test.cjs` | Cross-validator tests |
 
 ## Installation
 
