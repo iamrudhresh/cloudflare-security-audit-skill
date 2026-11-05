@@ -7,6 +7,19 @@ All notable changes to this project are documented here. The format follows
 Because this skill's output is consumed by other tooling, any change that can invalidate an
 existing `findings.json` or `coverage-ledger.json` is treated as a major change.
 
+## [1.0.3] - 2026-11-05
+
+### Fixed
+
+- **A coverage statistic was attributed to this fork rather than to Cloudflare.** The README
+  design principles claimed "in our test runs, a single run found roughly half of the
+  vulnerabilities that repeated runs found in total". That measurement comes from Cloudflare's
+  [Build your own vulnerability harness](https://blog.cloudflare.com/build-your-own-vulnerability-harness),
+  where it is reported as a *limitation* that motivated building a real harness; inherited into a
+  fork's README, "our test runs" read as this project's data. It is now attributed to its source,
+  carries the post's fuller finding that single-run results skew toward simpler and less subtle
+  bugs, and states plainly that no independent coverage study has been run here.
+
 ## [1.0.2] - 2026-11-05
 
 ### Fixed
@@ -167,6 +180,7 @@ Deliberately deferred, with reasons:
   backlog is clear; the discoverability problem it was partly meant to solve is addressed by #121.
 - **MIT-0 relicensing** (upstream #10). A licensing decision, not a code change.
 
+[1.0.3]: https://github.com/iamrudhresh/cloudflare-security-audit-skill/releases/tag/v1.0.3
 [1.0.2]: https://github.com/iamrudhresh/cloudflare-security-audit-skill/releases/tag/v1.0.2
 [1.0.1]: https://github.com/iamrudhresh/cloudflare-security-audit-skill/releases/tag/v1.0.1
 [1.0.0]: https://github.com/iamrudhresh/cloudflare-security-audit-skill/releases/tag/v1.0.0
