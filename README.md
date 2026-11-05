@@ -149,6 +149,16 @@ The skill activates automatically when the request matches its trigger (security
 - **Defense-in-depth gaps are not vulnerabilities.** If Layer A prevents the attack, the absence of Layer B is a hardening note.
 - **Multiple runs improve coverage.** In our test runs, a single run found roughly half of the vulnerabilities that repeated runs found in total.
 
+### Invoking it directly
+
+The skill activates automatically when a request matches its trigger (security audit, find
+vulnerabilities, pen-test the code). When several installed skills share those triggers and
+another one wins, name this one explicitly instead:
+
+```
+/cloudflare-security-audit <prompt>
+```
+
 ## Scope and limits
 
 - **Known vulnerabilities in pinned dependencies are out of scope.** Nothing in the workflow fetches advisory or CVE data, and hunters run without external networking, so a disclosed vulnerability in a dependency version that postdates the model's knowledge will not be found. A known-vulnerable dependency is also not a finding by itself: it needs a demonstrated resolution, build, or execution boundary. Run a dependency scanner alongside this skill if that coverage matters.
