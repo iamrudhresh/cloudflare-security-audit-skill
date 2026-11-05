@@ -3,8 +3,7 @@
 ### Phase 3: Independently validate every candidate
 
 After the clean coverage-critic pass or an explicitly recorded early stop, consolidate Phase 2 candidates, carried same-source prior confirmations, and carried still-blocked prior `needs_validation` records by stable fingerprint and root cause. Give every unique proposed `confirmed` and `needs_validation` candidate to a fresh `general` verifier that did not hunt it, following the live-child cap in [SKILL.md](SKILL.md). A carried prior confirmation follows the same current verification path even though hunters exclude that unchanged root cause. A verifier may read hunter or prior artifacts but must re-read every cited current source location and independently run any decisive check it can reproduce safely.
-Assign each verifier a canonical lowercase unique ID and `<output-dir>/agents/<verifier-id>/scratch/` plus parent-owned `artifacts/`. The verifier writes only to `scratch/` and never writes retained artifacts. It receives only the candidate, its linked coverage-unit checks and artifact paths, architecture facts needed to interpret the path, exact relevant companion validation blocks, the promotion procedure block below, the source/local execution boundary, the `confirmed`, `needs_validation`, and `rejected` branches of `report-schema.json` copied verbatim, and prior records with the same fingerprint. It must not receive another verifier's conclusion.
-
+Assign each verifier a canonical lowercase unique ID and `<output-dir>/agents/<verifier-id>/scratch/` plus parent-owned `artifacts/`. The verifier writes only to `scratch/` and never writes retained artifacts. It receives only the untrusted-content block from [SKILL.md](SKILL.md) verbatim, the candidate, its linked coverage-unit checks and artifact paths, architecture facts needed to interpret the path, exact relevant companion validation blocks, the promotion procedure block below, the source/local execution boundary, the `confirmed`, `needs_validation`, and `rejected` branches of `report-schema.json` copied verbatim, and prior records with the same fingerprint. It must not receive another verifier's conclusion.
 #### Candidate-verifier prompt
 
 Start with the delegated-agent preamble in [SKILL.md](SKILL.md), then:
@@ -121,8 +120,7 @@ Fix every structural and semantic error before continuing. The findings validato
 
 ### Phase 5: Verify the final records with fresh eyes
 
-Launch one fresh `research` verifier per final `confirmed` and `needs_validation` record, following the live-child cap and delegated-agent preamble in [SKILL.md](SKILL.md). Prefix each Phase 5 prompt with that preamble. This verifier checks the structured record, not the hunter write-up, and remains inside source/local boundaries.
-
+Launch one fresh `research` verifier per final `confirmed` and `needs_validation` record, following the live-child cap and delegated-agent preamble and untrusted-content block in [SKILL.md](SKILL.md). Prefix each Phase 5 prompt with that preamble and block. This verifier checks the structured record, not the hunter write-up, and remains inside source/local boundaries.
 In a `quick` run, Phase 3 and Phase 5 merge: the Phase 3 verifier also performs these record checks and returns the final schema-shaped record, so each candidate gets one fresh independent reviewer instead of two. Every other profile keeps the two passes separate. Never skip independent review of a `confirmed` record in any profile.
 
 For `confirmed`, require it to check:
