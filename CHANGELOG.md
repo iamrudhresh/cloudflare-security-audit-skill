@@ -7,6 +7,22 @@ All notable changes to this project are documented here. The format follows
 Because this skill's output is consumed by other tooling, any change that can invalidate an
 existing `findings.json` or `coverage-ledger.json` is treated as a major change.
 
+## [1.0.2] - 2026-11-05
+
+### Fixed
+
+- **Three incoherences left by the backlog merge**, found by reading the merged `HUNTING.md` and
+  `SKILL.md` as agent instructions rather than as a diff. These files are pasted into agent
+  prompts verbatim, so wording defects there are functional defects.
+  - A paragraph break was lost while reconciling two pull requests, running two unrelated rules
+    together mid-sentence.
+  - `HUNTING.md` listed `cwe` among the fields required by the `confirmed` branch, while the
+    schema and `VALIDATION-AND-REPORTING.md` make it optional. The hunter contract now states
+    both halves: supply it when writing a new record, optional in the schema so older records
+    still validate.
+  - Three documents referenced "the live-child cap in SKILL.md", which labelled the rule "Live
+    children." and never used that phrase, leaving an agent to infer the mapping.
+
 ## [1.0.1] - 2026-11-05
 
 ### Fixed
@@ -151,5 +167,6 @@ Deliberately deferred, with reasons:
   backlog is clear; the discoverability problem it was partly meant to solve is addressed by #121.
 - **MIT-0 relicensing** (upstream #10). A licensing decision, not a code change.
 
+[1.0.2]: https://github.com/iamrudhresh/cloudflare-security-audit-skill/releases/tag/v1.0.2
 [1.0.1]: https://github.com/iamrudhresh/cloudflare-security-audit-skill/releases/tag/v1.0.1
 [1.0.0]: https://github.com/iamrudhresh/cloudflare-security-audit-skill/releases/tag/v1.0.0
