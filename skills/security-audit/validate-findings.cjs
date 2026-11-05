@@ -692,6 +692,21 @@ function enforceJsonTextLimits(contents) {
   const containers = [];
   let inString = false;
   let escaped = false;
+  let keyStart = -1;
+
+  function checkObjectKey(end) {
+    const container = containers[containers.length - 1];
+    let key;
+    try {
+      key = JSON.parse(`"${contents.slice(keyStart, end)}"`);
+    } catch {
+      return;
+    }
+    if (container.keys.has(key)) {
+      throw new JsonStructureError(`input has duplicate object key ${safeQuote(key)}`);
+    }
+    container.keys.add(key);
+  }
 
   function markArrayItem() {
     const container = containers[containers.length - 1];
@@ -712,6 +727,10 @@ function enforceJsonTextLimits(contents) {
         escaped = true;
       } else if (character === "\"") {
         inString = false;
+        if (keyStart !== -1) {
+          checkObjectKey(index);
+          keyStart = -1;
+        }
       }
       continue;
     }
@@ -724,6 +743,7 @@ function enforceJsonTextLimits(contents) {
         if (container.fields > LIMITS.objectFields) {
           throw new JsonStructureError(`input exceeds ${LIMITS.objectFields} field object limit`);
         }
+        keyStart = index + 1;
       } else {
         markArrayItem();
       }
@@ -739,6 +759,7 @@ function enforceJsonTextLimits(contents) {
         items: 0,
         fields: 0,
         expectsKey: character === "{",
+        keys: new Set(),
       });
     } else if (character === "]" || character === "}") {
       containers.pop();
