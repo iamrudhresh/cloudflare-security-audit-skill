@@ -11,7 +11,7 @@ Before launch, the parent changes assigned units to `in_progress`, sets a canoni
 
 Every hunter prompt contains these parts in this order:
 
-1. The delegated-agent preamble from [SKILL.md](SKILL.md), then a two-sentence role preamble: the hunter's goal is to find source-grounded security invariant failures in its assigned units, and it must return exactly one JSON object matching the structured-result contract at the end of this prompt.
+1. The delegated-agent preamble and untrusted-content block from [SKILL.md](SKILL.md), then a two-sentence role preamble: the hunter's goal is to find source-grounded security invariant failures in its assigned units, and it must return exactly one JSON object matching the structured-result contract at the end of this prompt.
 2. `architecture.md` verbatim.
 3. Assigned coverage IDs, subsystem, boundary, repository-relative starting paths, and each unit's assignment block map from `coverage-ledger.json`.
 4. The exact selected blocks, copied verbatim: each selected ordinary attack-class block from `ATTACK-CLASSES.md`, and from each selected companion its `Core discipline`, each chosen attack-class subsection, `Universal moves`, and `Validation rules`. Ordinary blocks are self-contained and carry no companion-style `Core discipline`, `Universal moves`, or `Validation rules` sections. Do not send block or companion names alone.
@@ -20,7 +20,6 @@ Every hunter prompt contains these parts in this order:
 7. The core validation rules below.
 8. Carried same-source prior confirmed exclusions, each limited to fingerprint, title, and root cause, plus peer-owned current coverage IDs that this hunter must not duplicate.
 9. The unique scratch/artifact paths, safe agent ID, predeclared promotion allowlist and byte limits, and the structured-result contract, including the Structured hunter result block below and the `confirmed` and `needs_validation` branches of `report-schema.json` copied verbatim.
-
 A prompt may select several companion blocks when the same path crosses several domains. Keep their constraints together. Scope is the hunter's coverage obligation, not permission to duplicate excluded work. If an unexpected different boundary appears, return it under `uncovered` so the parent creates a stable ledger unit and assigns it in the next wave.
 
 #### Core hunting method — include in every hunter prompt
@@ -223,8 +222,7 @@ The parent validates each unit result, maps it to exactly one assigned `coverage
 
 ## Coverage-critic waves
 
-Immediately after each hunter wave, including same-wave malformed-hunter retries, spend the reserved invocation on one fresh `research` post-wave coverage critic. Prefix its prompt with the delegated-agent preamble in [SKILL.md](SKILL.md). It receives `architecture.md`, the full coverage ledger including each assignment block map, current candidate fingerprints and states, and the prior-ledger gap summary. It reads source but does not write or run targets. Require exactly this JSON:
-```json
+Immediately after each hunter wave, including same-wave malformed-hunter retries, spend the reserved invocation on one fresh `research` post-wave coverage critic. Prefix its prompt with the delegated-agent preamble and untrusted-content block in [SKILL.md](SKILL.md). It receives `architecture.md`, the full coverage ledger including each assignment block map, current candidate fingerprints and states, and the prior-ledger gap summary. It reads source but does not write or run targets. Require exactly this JSON:```json
 {
   "missing_units": [
     {
