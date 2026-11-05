@@ -2,7 +2,12 @@
 
 /**
  * Validates coverage-ledger.json and its canonical coverage IDs.
- * Usage: node validate-coverage-ledger.cjs <path-to-coverage-ledger.json> [--terminal]
+ * Usage: node validate-coverage-ledger.cjs <path-to-coverage-ledger.json> [--terminal] [--target <repository-root>]
+ *
+ * With --target, every repository-relative path the ledger claims
+ * (starting_paths, reviewed_paths, and check-level reviewed_paths, including
+ * archived attempts) must exist under the target root. Artifact paths are
+ * output-relative and are never resolved against the target.
  */
 
 const fs = require("node:fs");
@@ -924,6 +929,56 @@ function validateDocument(ledger, baseDir, options = {}) {
   return errors;
 }
 
+function collectLedgerTargetPaths(ledger, entries) {
+  if (!Array.isArray(ledger)) return;
+  const collectArray = (value, location) => {
+    if (!Array.isArray(value)) return;
+    value.slice(0, MAX_LIST_ITEMS).forEach((entry, entryIndex) => {
+      if (typeof entry === "string" && isSafeRelativePath(entry)) {
+        entries.push({ location: `${location}[${entryIndex}]`, value: entry });
+      }
+    });
+  };
+  const collectChecks = (checks, location) => {
+    if (!Array.isArray(checks)) return;
+    checks.slice(0, MAX_LIST_ITEMS).forEach((check, checkIndex) => {
+      if (isObject(check)) collectArray(check.reviewed_paths, `${location}[${checkIndex}].reviewed_paths`);
+    });
+  };
+  ledger.forEach((unit, index) => {
+    if (!isObject(unit)) return;
+    const base = `$[${index}]`;
+    collectArray(unit.starting_paths, `${base}.starting_paths`);
+    collectArray(unit.reviewed_paths, `${base}.reviewed_paths`);
+    collectChecks(unit.local_checks, `${base}.local_checks`);
+    if (!Array.isArray(unit.attempts)) return;
+    unit.attempts.slice(0, MAX_LIST_ITEMS).forEach((attempt, attemptIndex) => {
+      if (!isObject(attempt)) return;
+      const attemptBase = `${base}.attempts[${attemptIndex}]`;
+      collectArray(attempt.reviewed_paths, `${attemptBase}.reviewed_paths`);
+      collectChecks(attempt.local_checks, `${attemptBase}.local_checks`);
+    });
+  });
+}
+
+function validateTargetPaths(ledger, targetRoot) {
+  const errors = createErrorList();
+  const entries = [];
+  collectLedgerTargetPaths(ledger, entries);
+  for (const { location, value } of entries) {
+    const resolved = path.resolve(targetRoot, ...value.split("/"));
+    const relative = path.relative(targetRoot, resolved);
+    if (relative.startsWith("..") || path.isAbsolute(relative)) {
+      errors.push(`${location}: ${safeQuote(value)} escapes the target repository`);
+      continue;
+    }
+    if (!fs.existsSync(resolved)) {
+      errors.push(`${location}: ${safeQuote(value)} does not exist under the target repository`);
+    }
+  }
+  return errors;
+}
+
 const BOOLEAN_FLAGS = new Set(["--terminal"]);
 
 // One CLI contract (PR #123): a single path, then flags. A flag in BOOLEAN_FLAGS
@@ -931,23 +986,46 @@ const BOOLEAN_FLAGS = new Set(["--terminal"]);
 // arguments are rejected rather than silently ignored.
 function run(file, rest = []) {
   if (!file) {
-    console.error("Usage: node validate-coverage-ledger.cjs <path-to-coverage-ledger.json> [--terminal]");
+    console.error("Usage: node validate-coverage-ledger.cjs <path-to-coverage-ledger.json> [--terminal] [--target <repository-root>]");
     return 1;
   }
 
   let terminal = false;
+  let targetRoot = null;
   for (let index = 0; index < rest.length; index += 1) {
     const name = rest[index];
     if (typeof name !== "string" || !name.startsWith("--")) {
-      console.error("Usage: node validate-coverage-ledger.cjs <path-to-coverage-ledger.json> [--terminal]");
+      console.error("Usage: node validate-coverage-ledger.cjs <path-to-coverage-ledger.json> [--terminal] [--target <repository-root>]");
       return 1;
     }
     if (BOOLEAN_FLAGS.has(name)) {
       if (name === "--terminal") terminal = true;
       continue;
     }
+    if (name === "--target") {
+      if (index + 1 >= rest.length) {
+        console.error("Missing value for --target");
+        return 1;
+      }
+      targetRoot = path.resolve(rest[++index]);
+      continue;
+    }
     console.error(`Unknown argument: ${safeQuote(name)}`);
     return 1;
+  }
+
+  if (targetRoot !== null) {
+    let targetStat;
+    try {
+      targetStat = fs.statSync(targetRoot);
+    } catch {
+      console.error("Target repository root could not be opened");
+      return 1;
+    }
+    if (!targetStat.isDirectory()) {
+      console.error("Target repository root is not a directory");
+      return 1;
+    }
   }
 
   let contents;
@@ -977,6 +1055,7 @@ function run(file, rest = []) {
   let errors;
   try {
     errors = validateDocument(ledger, path.dirname(path.resolve(file)), { terminal });
+    if (targetRoot !== null) errors.push(...validateTargetPaths(ledger, targetRoot));
   } catch {
     console.error("Failed to validate coverage ledger: unexpected validation error");
     return 1;
@@ -998,6 +1077,7 @@ module.exports = {
   VISIBLE_CONTENT,
   WINDOWS_RESERVED_COMPONENT,
   canonicalCoverageId,
+  collectLedgerTargetPaths,
   encodeCanonicalRef,
   hasVisibleProse,
   isSafeAgentId,
@@ -1006,6 +1086,7 @@ module.exports = {
   readFileWithinLimit,
   safeQuote,
   validateDocument,
+  validateTargetPaths,
 };
 
 if (require.main === module) {

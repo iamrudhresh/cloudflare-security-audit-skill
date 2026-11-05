@@ -77,7 +77,7 @@ function cliOutput(result) {
 }
 
 function runCliWithArtifacts(contents, artifacts, options = {}) {
-  const { nodeArgs = [], timeout = CLI_TIMEOUT_MS } = options;
+  const { nodeArgs = [], timeout = CLI_TIMEOUT_MS, extraArgs = [] } = options;
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "validate-coverage-ledger-"));
   const ledgerPath = path.join(directory, "coverage-ledger.json");
   try {
@@ -87,7 +87,7 @@ function runCliWithArtifacts(contents, artifacts, options = {}) {
       fs.mkdirSync(path.dirname(fullPath), { recursive: true });
       fs.writeFileSync(fullPath, fileContents);
     }
-    return spawnSync(process.execPath, [...nodeArgs, validatorPath, ledgerPath], {
+    return spawnSync(process.execPath, [...nodeArgs, validatorPath, ledgerPath, ...extraArgs], {
       encoding: "utf8",
       timeout,
     });
@@ -1126,4 +1126,77 @@ test("still applies schema-only artifact validation when called directly without
     local_checks: [localCheck()],
   });
   assert.deepEqual(errorsFor([local]), []);
+});
+
+test("--target ground-truths every claimed repository path", { skip: !HAS_SAFE_INPUT_OPEN }, () => {
+  const targetDir = fs.mkdtempSync(path.join(os.tmpdir(), "ledger-target-"));
+  try {
+    fs.mkdirSync(path.join(targetDir, "src"), { recursive: true });
+    fs.writeFileSync(path.join(targetDir, "src", "router.ts"), "// router\n");
+    fs.writeFileSync(path.join(targetDir, "src", "authz.ts"), "// authz\n");
+
+    const pass = runCli(JSON.stringify([unit()]), { extraArgs: ["--target", targetDir] });
+    assert.equal(pass.status, 0, cliOutput(pass));
+    assert.match(pass.stdout, /PASS: 1 coverage units valid/);
+
+    const phantom = runCli(JSON.stringify([unit({ starting_paths: ["src/router.ts", "src/nonexistent.ts"] })]), {
+      extraArgs: ["--target", targetDir],
+    });
+    assert.equal(phantom.status, 1);
+    assert.match(cliOutput(phantom), /starting_paths\[1\].*does not exist under the target repository/);
+
+    const phantomReviewed = unit({
+      status: "covered",
+      agent_id: "hunter-1",
+      reviewed_paths: ["src/router.ts", "src/never-read.ts"],
+      local_checks: [
+        sourceCheck(),
+        sourceCheck("hunter-1", { reviewed_paths: ["src/never-read.ts"] }),
+      ],
+    });
+    const result = runCli(JSON.stringify([phantomReviewed]), { extraArgs: ["--target", targetDir] });
+    assert.equal(result.status, 1);
+    assert.match(cliOutput(result), /does not exist under the target repository/);
+  } finally {
+    fs.rmSync(targetDir, { recursive: true, force: true });
+  }
+});
+
+test("--target never resolves output-relative artifact paths against the target", { skip: !HAS_SAFE_INPUT_OPEN }, () => {
+  const targetDir = fs.mkdtempSync(path.join(os.tmpdir(), "ledger-target-"));
+  try {
+    fs.mkdirSync(path.join(targetDir, "src"), { recursive: true });
+    fs.writeFileSync(path.join(targetDir, "src", "router.ts"), "// router\n");
+    fs.writeFileSync(path.join(targetDir, "src", "authz.ts"), "// authz\n");
+
+    const covered = unit({
+      status: "covered",
+      agent_id: "hunter-1",
+      reviewed_paths: ["src/router.ts"],
+      local_checks: [localCheck()],
+    });
+    const check = localCheck();
+    const result = runCliWithArtifacts(
+      JSON.stringify([covered]),
+      { [check.artifact]: "local check evidence" },
+      { extraArgs: ["--target", targetDir] },
+    );
+    assert.equal(result.status, 0, cliOutput(result));
+    // The artifact lives beside the ledger, not under the target root.
+    assert.equal(fs.existsSync(path.join(targetDir, check.artifact)), false);
+  } finally {
+    fs.rmSync(targetDir, { recursive: true, force: true });
+  }
+});
+
+test("--target rejects missing roots and unknown arguments", { skip: !HAS_SAFE_INPUT_OPEN }, () => {
+  const missing = runCli(JSON.stringify([unit()]), {
+    extraArgs: ["--target", path.join(os.tmpdir(), "no-such-repository-root")],
+  });
+  assert.equal(missing.status, 1);
+  assert.match(cliOutput(missing), /Target repository root could not be opened/);
+
+  const unknown = runCli(JSON.stringify([unit()]), { extraArgs: ["--bogus"] });
+  assert.equal(unknown.status, 1);
+  assert.match(cliOutput(unknown), /Unknown argument/);
 });
