@@ -31,9 +31,10 @@ unavailable or fails, do not use that file as evidence.
 3. For a proposed confirmed candidate, independently reproduce the minimum observed
    result when possible. Verify inputs, interface shape, conditions, and affected
    dummy principal/resource. Do not infer a stronger result or continue after it.
-4. Verify that likelihood, impact, confidence, and the proposed source fix match only
-   what the evidence establishes, and that `remediation.preserved_uses` names the
-   legitimate users of every path the fix refuses.
+4. Verify that likelihood, impact, confidence, the CWE classification, any CVSS base
+   vector and references, and the proposed source fix match only what the evidence
+   establishes, and that `remediation.preserved_uses` names the legitimate users of
+   every path the fix refuses.
 5. For a proposed needs_validation candidate, decide whether the blocker is genuinely
    outside source/local observation. If source refutes the trace, reject it. If the
    missing fact remains decisive, keep needs_validation and make the local and
@@ -97,15 +98,15 @@ If a strict total-agent budget cannot cover every candidate, set the run status 
 
 The parent writes all independently decided findings to `<output-dir>/findings.json`, sorted by fingerprint, followed by any shared blocker records sorted by id. Include:
 
-- `confirmed`: source-grounded vulnerabilities with complete local execution evidence, conditions, specific remediation, likelihood/impact/overall severity, and confidence.
+- `confirmed`: source-grounded vulnerabilities with complete local execution evidence, conditions, specific remediation, likelihood/impact/overall severity, confidence, and a CWE classification, plus optional CVSS and references.
 - `needs_validation`: source-grounded candidates with an exact unresolved blocker and at least one applicable local or owner-observed deployment plan.
 - `rejected`: source-grounded candidates disproved during validation, retained so future runs do not repeat the unsupported claim without changed evidence.
 
 Read `report-schema.json` immediately before writing. It uses `additionalProperties: false`; do not carry hunter wrapper fields into a record. Keep these verdict contracts distinct:
 
-- A `confirmed` record uses `root_cause`, `intended_behavior`, `conditions`, `execution`, `remediation`, `severity`, and `confidence`. `intended_behavior` says what the path is for as well as what it must prevent. It must not use `claimed_root_cause`, `blockers`, `validation_plan`, or `reason`. `execution` is target-neutral and uses the target's native interface: API/HTTP input, CLI call, library call, message, file fixture, browser action, rendered policy, or local harness as applicable. `observed_result` is nonempty and factual.
-- A `needs_validation` record uses `claimed_root_cause`, `trace`, `evidence`, `blockers`, and at least one nonempty `validation_plan.local` or `validation_plan.deployment` field. Include both only when both contexts can resolve distinct facts. It must not use severity, execution, remediation, reason, or confirmed root cause.
-- A `rejected` record uses `claimed_root_cause`, `trace`, `evidence`, and `reason`. It must not use severity, execution, remediation, blockers, validation plan, or confirmed root cause.
+- A `confirmed` record uses `root_cause`, `intended_behavior`, `conditions`, `execution`, `remediation`, `severity`, and `confidence`, and may use `cwe`, `cvss`, and `references`. `intended_behavior` says what the path is for as well as what it must prevent. It must not use `claimed_root_cause`, `blockers`, `validation_plan`, or `reason`. `execution` is target-neutral and uses the target's native interface: API/HTTP input, CLI call, library call, message, file fixture, browser action, rendered policy, or local harness as applicable. `observed_result` is nonempty and factual. `cwe` lists every CWE identifier established for the root cause. `cvss`, when present, stores only `version` and a base-vector `vector`, never a score, and is omitted rather than guessed when a metric depends on a fact source does not establish; `overall_severity` remains the rating of record. `references` holds absolute `https` documentation URLs.
+- A `needs_validation` record uses `claimed_root_cause`, `trace`, `evidence`, `blockers`, and at least one nonempty `validation_plan.local` or `validation_plan.deployment` field. Include both only when both contexts can resolve distinct facts. It may carry an optional `cwe` and `references` for the claimed root cause, but never `cvss`. It must not use severity, execution, remediation, reason, or confirmed root cause.
+- A `rejected` record uses `claimed_root_cause`, `trace`, `evidence`, and `reason`. It must not use severity, execution, remediation, blockers, validation plan, `cwe`, `cvss`, `references`, or confirmed root cause.
 
 #### Shared deployment facts
 
@@ -171,10 +172,11 @@ For `confirmed`, require it to check:
 5. Severity separation: realistic likelihood, demonstrated impact, overall no greater than impact.
 6. Remediation strategy and any `code_changes`, including whether the fix enforces the invariant without merely moving trust.
 7. Legitimate users of every path the fix refuses: the product's documented flows, client libraries, plugins, published integrations, and advertised anonymous modes. Each one appears in `remediation.preserved_uses` with how it keeps working, or the strategy states that the fix removes that capability and leaves the design change to the owner.
+8. Classification: every `cwe` identifier and `references` URL supports the demonstrated root cause, and `cvss` is a complete base vector valid for its declared version, with no guessed metric and no stored score.
 
 For `needs_validation`, require it to check:
 
-1. The source path is real and supports only the `claimed_root_cause` stated.
+1. The source path is real and supports only the `claimed_root_cause` stated, along with any optional `cwe` or `references`.
 2. Every listed blocker is decisive and not already answerable locally.
 3. The candidate names a boundary and a possible concrete result rather than a generic concern.
 4. At least one validation-plan field is present and exact. `local` uses a bounded fixture; `deployment` asks an owner to observe a configuration, identity, route, policy, or runtime fact. Do not invent a plan for an inapplicable context, and never send audit traffic to a deployment.
@@ -198,7 +200,7 @@ Write:
 
 1. Run profile, scope, budget (if set) with agents spent versus planned, source ref, sandboxed source-and-local-only execution statement, prior-run use, and explicit deferred and out-of-scope coverage. Name carried same-source confirmations and changed-source revalidations. A `quick`, scoped, budget-limited, or incomplete run states plainly that it is a partial pass. If candidate validation exhausted a strict budget, state that the run is incomplete and list every unvalidated fingerprint and linked unit; do not describe those candidates as findings. If the budget prevented a mandatory critic, state which critic did not run and make no clean-coverage claim. If any unit was deferred with `malformed_hunter_return`, name those coverage IDs; do not describe them as covered or as critic-found gaps.
 2. One short security posture summary.
-3. A confirmed-findings table: severity, title, affected boundary, and one-line observed result.
+3. A confirmed-findings table: CWE, severity, title, affected boundary, and one-line observed result.
 4. Each confirmed finding: repository source location, lower-trust principal, target-native bounded reproduction, conditions, actual result, impact, priority rationale, smallest source fix, and the legitimate uses it preserves or the capability it removes.
 5. A separate `NEEDS VALIDATION` table. Give each lead's title, repository trace, exact blocker, bounded local next step, and safe owner-observed deployment check. Include its shared blocker ids, resolving their facts from the structured records. Do not assign severity or call it a confirmed vulnerability. When shared blockers exist, render a separate table with id, exact fact, status, owner-observed check, settlement evidence (if settled), and dependent fingerprints. Rank open facts by descending count of distinct referring needs_validation findings, breaking ties lexicographically by id; list settled facts separately for provenance. This count measures candidates awaiting a fact, not guaranteed vulnerabilities or automatic promotions. Exclude shared blocker records from all finding/verdict counts.
 6. Separate hardening notes and positive source patterns.
@@ -210,6 +212,7 @@ Do not describe rejected records as findings. Mention their fingerprints only wh
 
 For each confirmed `medium`, `high`, or `critical` record, copy the complete source path and target-neutral local reproduction:
 
+- CWE classification, optional CVSS base vector, and reference URLs;
 - ordered repository-relative trace and evidence;
 - dummy attacker/principal and affected dummy resource;
 - native input, invocation, or fixture and exact bounded instructions;
@@ -221,7 +224,7 @@ For each confirmed `medium`, `high`, or `critical` record, copy the complete sou
 
 #### `NEEDS-VALIDATION.md`
 
-For every unresolved record, copy the source trace, verified evidence, exact blocker, affected boundary, and each applicable bounded local or owner-observed resolution plan. Keep these as prioritized leads without severity. Do not turn them into live test guidance or assume the missing deployment fact.
+For every unresolved record, copy the source trace, verified evidence, exact blocker, affected boundary, optional CWE classification and references, and each applicable bounded local or owner-observed resolution plan. Keep these as prioritized leads without severity. Do not turn them into live test guidance or assume the missing deployment fact.
 
 Render the same ranked shared-blocker table here when present. Each lead names its
 `blocker_ids` and links to that table instead of duplicating shared fact text.
