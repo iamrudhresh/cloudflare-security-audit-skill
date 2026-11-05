@@ -157,7 +157,7 @@ function toSarif(findings, { automationId = "security-audit/findings.json" } = {
         tool: {
           driver: {
             name: "security-audit-skill",
-            informationUri: "https://github.com/cloudflare/security-audit-skill",
+            informationUri: "https://github.com/iamrudhresh/cloudflare-security-audit-skill",
             rules,
           },
         },
