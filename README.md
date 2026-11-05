@@ -15,7 +15,7 @@ The skill runs a structured audit in six phases:
 5. **Independent record verification** -- fresh agents verify final source claims. Material replacements receive another independent verifier.
 6. **Target-neutral reporting** -- derive `REPORT.md`, `FINDINGS-DETAIL.md`, and `NEEDS-VALIDATION.md` from the verified records and coverage ledger.
 
-The parent runs `validate-coverage-ledger.cjs` after creating the ledger and after each later ledger update, and with `--terminal` in Phase 4 and after every Phase 5 replacement so a complete claim cannot retain open assignments. It runs `validate-findings.cjs` in Phase 4 and again after every Phase 5 replacement.
+The parent runs `validate-coverage-ledger.cjs` after creating the ledger and after each later ledger update, and with `--terminal` in Phase 4 and after every Phase 5 replacement so a complete claim cannot retain open assignments. It runs `validate-findings.cjs` in Phase 4 and again after every Phase 5 replacement. It runs `validate-run-metadata.cjs` in Phase 4 and whenever `run_status` becomes `complete` or `incomplete`.
 
 The verdicts are distinct: `confirmed` has a complete source trace and bounded observed result, `needs_validation` has an exact unresolved fact and no severity, and `rejected` records a disproved candidate.
 
@@ -63,6 +63,8 @@ Confirmed findings become results. Each `trace` becomes a `codeFlow` with the si
 | `validate-environment.test.cjs` | Isolation-gate tests, including escape and CLI exit-code cases |
 | `host-lock.cjs` | Exclusive lock for host mutations (install, upgrade, clean, delete), so two agents cannot mutate the machine at once |
 | `host-lock.test.cjs` | Host-lock tests: contention, ownership, stale reclaim, CLI behavior |
+| `validate-run-metadata.cjs` | Zero-dependency validator for `run-metadata.json` run-state in Phase 4 |
+| `validate-run-metadata.test.cjs` | Run-metadata validator tests |
 
 ## Installation
 
@@ -131,7 +133,7 @@ The skill activates automatically when the request matches its trigger (security
 ## Requirements
 
 - A coding agent with a model that supports tool use and parallel sub-agents. On Antigravity/Gemini, follow the delegation adapter in `SKILL.md` (`self` for hunters, four live children, authorized-review preamble).
-- Node.js for the zero-dependency findings and coverage-ledger validators
+- Node.js for the zero-dependency findings, coverage-ledger, and run-metadata validators
 - An OS-enforced sandbox for target-controlled builds, tests, processes, browsers, emulators, fuzzers, and fixtures. It must disable external networking, use a sanitized allowlisted environment, enforce resource limits, and allow writes only to assigned scratch paths. Without these controls, the workflow keeps the lead as `needs_validation` instead of executing target code.
 
 ## Design principles
