@@ -1,8 +1,34 @@
-# security-audit
+# cloudflare-security-audit-skill
 
-A coding-agent skill that turns your agent into a security auditor. It orchestrates isolated agents through reconnaissance, coverage-led hunting, candidate validation, structured output, independent record verification, and target-neutral reporting.
+A coding-agent skill that turns your agent into a security auditor. It orchestrates isolated
+agents through reconnaissance, coverage-led hunting, candidate validation, structured output,
+independent record verification, and target-neutral reporting.
 
-This is the skill that seeded Cloudflare's vulnerability discovery harness, described in [Build your own vulnerability harness](https://blog.cloudflare.com/build-your-own-vulnerability-harness). The harness grew into a multi-stage, fleet-wide system; this skill is the single-repo starting point it evolved from.
+[![Test](https://github.com/iamrudhresh/cloudflare-security-audit-skill/actions/workflows/test.yml/badge.svg)](https://github.com/iamrudhresh/cloudflare-security-audit-skill/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+> ### Independent community fork
+>
+> This is a community-maintained continuation of
+> [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill),
+> started on **5 November 2026**. It is **not affiliated with, endorsed by, or supported by
+> Cloudflare, Inc.** The name describes the lineage of the code, not its ownership. For the
+> official upstream project, use the link above.
+>
+> Upstream had not merged a pull request since 10 September 2026, leaving 74 open pull requests
+> and 40 open issues — including validators that could not read a single byte of input on
+> Windows. This fork triages that backlog: it merges the work that holds up, closes what is
+> superseded or harmful, and fixes two bugs nobody had filed. See
+> [CHANGELOG.md](CHANGELOG.md) for exactly what changed and
+> [CONTRIBUTING.md](CONTRIBUTING.md) to help.
+
+### Origin
+
+The upstream skill seeded Cloudflare's vulnerability discovery harness, described in
+[Build your own vulnerability harness](https://blog.cloudflare.com/build-your-own-vulnerability-harness).
+That harness grew into a multi-stage, fleet-wide system; this skill is the single-repo starting
+point it evolved from. The audit methodology here is Cloudflare's work, under MIT; this fork's
+contribution is maintenance — merging, reconciling and hardening the contributed backlog.
 
 ## What it does
 
@@ -78,14 +104,14 @@ Confirmed findings become results. Each `trace` becomes a `codeFlow` with the si
 Install the skill with the [Skills CLI](https://skills.sh):
 
 ```bash
-npx skills add https://github.com/cloudflare/security-audit-skill \
+npx skills add https://github.com/iamrudhresh/cloudflare-security-audit-skill \
   --skill security-audit
 ```
 
 Use `--global` for a user-level installation:
 
 ```bash
-npx skills add https://github.com/cloudflare/security-audit-skill \
+npx skills add https://github.com/iamrudhresh/cloudflare-security-audit-skill \
   --skill security-audit \
   --global
 ```
@@ -96,7 +122,7 @@ Run `npx skills --help` for agent-selection and non-interactive options.
 
 GitHub's **Code → Download ZIP** downloads the entire repository. Do not upload
 that archive directly in **Settings → Skills → Add → Upload Skills**: its
-`SKILL.md` is nested under `security-audit-skill-main/skills/security-audit/`,
+`SKILL.md` is nested under `cloudflare-security-audit-skill-main/skills/security-audit/`,
 which is deeper than the uploader accepts.
 
 Instead, extract the repository archive, open its `skills` directory, and
@@ -167,13 +193,55 @@ another one wins, name this one explicitly instead:
 - **Known vulnerabilities in pinned dependencies are out of scope.** Nothing in the workflow fetches advisory or CVE data, and hunters run without external networking, so a disclosed vulnerability in a dependency version that postdates the model's knowledge will not be found. A known-vulnerable dependency is also not a finding by itself: it needs a demonstrated resolution, build, or execution boundary. Run a dependency scanner alongside this skill if that coverage matters.
 - **Facts the audit cannot observe stay open.** A lead that depends on an external or deployment fact is recorded as `needs_validation` with that fact named, not guessed at.
 
+## Versioning and releases
+
+Releases are tagged `vMAJOR.MINOR.PATCH` and listed on the
+[Releases page](https://github.com/iamrudhresh/cloudflare-security-audit-skill/releases).
+`main` is always installable; pin a tag if you need a fixed version:
+
+```bash
+npx skills add https://github.com/iamrudhresh/cloudflare-security-audit-skill   --skill security-audit
+```
+
+What a version bump means here:
+
+| Bump | Meaning |
+|------|---------|
+| **Major** | A breaking change to `report-schema.json`, a validator CLI contract, or the workflow's phase contract |
+| **Minor** | A new attack class, companion guide, validator, or workflow rule that is backward compatible |
+| **Patch** | Bug fixes, documentation, and test-only changes |
+
+Because the skill's output is consumed by tooling, any change that can invalidate an existing
+`findings.json` or `coverage-ledger.json` is a major bump. See [CHANGELOG.md](CHANGELOG.md).
+
 ## Contributing
 
-Bug reports, documentation fixes, and improvements to the hunting classes or validators are welcome. Open an [issue](https://github.com/cloudflare/security-audit-skill/issues) to discuss significant changes before submitting a pull request. Keep contributions focused on a single behavior or documentation fix.
+Contributions are welcome — this fork exists because the backlog needed attention, and it
+only stays useful if that keeps happening.
+
+Good first contributions:
+
+- **A new attack class or hunting pattern** in a companion guide. The highest-value kind of
+  contribution, and it needs no code.
+- **A validator bug**, ideally with a failing test first.
+- **A platform problem.** The validators are tested on Linux, Windows and macOS; breakage on
+  any of them is a real bug.
+- **Documentation** that was wrong or unclear when you tried to use it.
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for the branching model, commit conventions, how to run
+the test suites, and what a reviewable pull request looks like. Participation is governed by our
+[Code of Conduct](CODE_OF_CONDUCT.md).
+
+To report a vulnerability **in this skill**, follow [SECURITY.md](SECURITY.md) — please do not
+open a public issue for it.
 
 ## Contact
 
-Questions, feedback, or comparing notes on AI-driven security tooling: security-ai-research@cloudflare.com
+Open an [issue](https://github.com/iamrudhresh/cloudflare-security-audit-skill/issues) or start a
+[discussion](https://github.com/iamrudhresh/cloudflare-security-audit-skill/discussions).
+
+Questions for the **upstream** project, or notes on Cloudflare's own AI-driven security tooling,
+belong with Cloudflare at security-ai-research@cloudflare.com rather than here.
 
 ## License
 
