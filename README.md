@@ -142,6 +142,10 @@ The skill activates automatically when the request matches its trigger (security
 - **Known vulnerabilities in pinned dependencies are out of scope.** Nothing in the workflow fetches advisory or CVE data, and hunters run without external networking, so a disclosed vulnerability in a dependency version that postdates the model's knowledge will not be found. A known-vulnerable dependency is also not a finding by itself: it needs a demonstrated resolution, build, or execution boundary. Run a dependency scanner alongside this skill if that coverage matters.
 - **Facts the audit cannot observe stay open.** A lead that depends on an external or deployment fact is recorded as `needs_validation` with that fact named, not guessed at.
 
+## Contributing
+
+Bug reports, documentation fixes, and improvements to the hunting classes or validators are welcome. Open an [issue](https://github.com/cloudflare/security-audit-skill/issues) to discuss significant changes before submitting a pull request. Keep contributions focused on a single behavior or documentation fix.
+
 ## Contact
 
 Questions, feedback, or comparing notes on AI-driven security tooling: security-ai-research@cloudflare.com
